@@ -1,0 +1,77 @@
+[
+    {
+        "query": "Why should we perform actions without expecting results?",
+        "expected_references": ["2.47", "3.19", "3.25"],
+        "expected_topics": ["detachment", "selfless action"]
+    },
+    {
+        "query": "What is Karma Yoga?",
+        "expected_references": ["3.3", "3.7", "3.19"],
+        "expected_topics": ["karma yoga", "selfless action"]
+    },
+    {
+        "query": "What is the difference between action and inaction?",
+        "expected_references": ["4.16", "4.17", "4.18"],
+        "expected_topics": ["action", "inaction"]
+    },
+    {
+        "query": "Who is a person of steady wisdom?",
+        "expected_references": ["2.55", "2.56", "2.57"],
+        "expected_topics": ["steady wisdom", "sthita prajna"]
+    },
+    {
+        "query": "How can I control my mind?",
+        "expected_references": ["6.26", "6.34", "6.35"],
+        "expected_topics": ["mind control", "discipline"]
+    },
+    {
+        "query": "What is devotion?",
+        "expected_references": ["12.2", "12.13", "12.14"],
+        "expected_topics": ["devotion", "bhakti"]
+    },
+    {
+        "query": "What is the Self?",
+        "expected_references": ["2.20", "2.23", "2.24"],
+        "expected_topics": ["atman", "self", "immortality"]
+    },
+    {
+        "query": "How should a wise person perform their duties?",
+        "expected_references": ["3.25", "3.26", "3.27"],
+        "expected_topics": ["duty", "example", "selfless action"]
+    },
+    {
+        "query": "What is meditation?",
+        "expected_references": ["6.10", "6.12", "6.19"],
+        "expected_topics": ["meditation", "yoga"]
+    },
+    {
+        "query": "Why do people suffer?",
+        "expected_references": ["2.62", "2.63", "2.14"],
+        "expected_topics": ["desire", "attachment", "suffering"]
+    },
+    {
+        "query": "What happens when desire turns into anger?",
+        "expected_references": ["2.62", "2.63"],
+        "expected_topics": ["desire", "anger", "delusion"]
+    },
+    {
+        "query": "How should one treat success and failure?",
+        "expected_references": ["2.48", "2.38"],
+        "expected_topics": ["equanimity", "yoga"]
+    },
+    {
+        "query": "What qualities does a true devotee have?",
+        "expected_references": ["12.13", "12.14", "12.15"],
+        "expected_topics": ["devotee", "qualities"]
+    },
+    {
+        "query": "Why is knowledge compared to a raft or boat?",
+        "expected_references": ["4.36", "4.37", "4.38"],
+        "expected_topics": ["knowledge", "purification"]
+    },
+    {
+        "query": "What is the relationship between faith and knowledge?",
+        "expected_references": ["4.39", "4.40"],
+        "expected_topics": ["faith", "knowledge", "doubt"]
+    }
+]
