@@ -51,3 +51,24 @@ class VectorStore:
             })
 
         return retrieved_documents
+
+    def get_by_metadata(self, where):
+        results = self.collection.get(
+            where=where,
+            include=["documents", "metadatas"],
+        )
+
+        retrieved_documents = []
+        for doc_id, document, metadata in zip(
+            results["ids"],
+            results["documents"],
+            results["metadatas"],
+        ):
+            retrieved_documents.append({
+                "id": doc_id,
+                "document": document,
+                "metadata": metadata,
+                "distance": 0.0,
+            })
+
+        return retrieved_documents

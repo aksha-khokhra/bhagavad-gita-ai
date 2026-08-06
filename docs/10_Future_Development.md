@@ -1,27 +1,28 @@
 # Project Tattva Documentation
 
 **Document:** 10 — Future Development  
-**Version:** 1.2  
+**Version:** 1.3  
 **Status:** Planned
 
 ---
 
 # 1. Purpose
 
-This document records planned improvements beyond Project Tattva v1.2.
+This document records planned improvements beyond Project Tattva v1.3.
 
-The current version includes verse, commentary, and chapter-summary retrieval with chapter-level routing. Future work should be prioritized based on measured retrieval or usability limitations rather than feature count alone.
+The current version includes verse, commentary, and chapter-summary retrieval with chapter-level routing and hybrid verse search. Future work should be prioritized based on measured retrieval or usability limitations rather than feature count alone.
 
 ---
 
 # 2. Current Baseline
 
-Project Tattva v1.2 currently includes:
+Project Tattva v1.3 currently includes:
 
 - Verse, commentary, and chapter document builders
 - Persistent ChromaDB collections for all three sources
 - Sentence Transformer embeddings
 - Multi-source Retriever with chapter routing
+- Hybrid verse retrieval (exact reference + BM25 + vector RRF)
 - Source-aware PromptBuilder
 - Local Ollama LLM integration
 - Interactive CLI
@@ -29,7 +30,7 @@ Project Tattva v1.2 currently includes:
 
 ---
 
-# 3. Version 1.3 — Retrieval Improvements
+# 3. Version 1.4 — Retrieval Hardening
 
 Planned improvements:
 
@@ -37,43 +38,30 @@ Planned improvements:
 - Add source-specific distance inspection.
 - Add dynamic retrieval counts.
 - Add similarity thresholds.
-- Improve evaluation data coverage.
+- Expand evaluation coverage for hard paraphrases.
 
 Goal:
 
-Improve retrieval precision without changing the overall architecture.
+Improve precision on remaining miss cases without changing the overall architecture.
 
 ---
 
-# 4. Version 1.4 — Reranking
+# 4. Version 1.5 — Cross-Encoder Reranking
 
 Planned improvements:
 
 - Retrieve a larger candidate set.
-- Apply a reranker to the candidates.
+- Apply a cross-encoder reranker to fused candidates.
 - Select the final context after reranking.
 
 Possible approaches:
 
 - Cross-encoder reranking
 - Source-aware weighted ranking
-- Reciprocal Rank Fusion
 
 ---
 
-# 5. Version 1.5 — Hybrid Retrieval
-
-Planned improvements:
-
-- Combine vector retrieval with lexical search.
-- Improve exact phrase and verse-reference matching.
-- Support direct reference queries such as `2.47`.
-
-Hybrid search may help when semantic retrieval misses domain-specific synonyms or exact terms.
-
----
-
-# 6. Version 1.6 — Conversation Memory
+# 5. Version 1.6 — Conversation Memory
 
 Planned improvements:
 
@@ -84,7 +72,7 @@ Planned improvements:
 
 ---
 
-# 7. Version 1.7 — API and Interface
+# 6. Version 1.7 — API and Interface
 
 Planned improvements:
 
@@ -99,7 +87,7 @@ The existing Chatbot class can be called directly from the API layer.
 
 ---
 
-# 8. Version 2.0 — Intelligent Query Routing
+# 7. Version 2.0 — Intelligent Query Routing
 
 Version 2.0 is expected to replace rule-based chapter detection with richer query-aware retrieval.
 
@@ -134,7 +122,7 @@ Potential capabilities:
 
 ---
 
-# 9. Evaluation Improvements
+# 8. Evaluation Improvements
 
 Future evaluation should include:
 
@@ -149,7 +137,7 @@ Future evaluation should include:
 
 ---
 
-# 10. Production Readiness
+# 9. Production Readiness
 
 Before production deployment, the project would require:
 
@@ -167,19 +155,19 @@ Before production deployment, the project would require:
 
 ---
 
-# 11. Prioritization Principle
+# 10. Prioritization Principle
 
 Future features should be added only when they address a demonstrated limitation.
 
-Commentary was added because evaluation showed a vocabulary gap in verse-only retrieval. Chapter routing was added because chapter documents were ready and overview questions needed a dedicated source. Future changes should follow the same evidence-driven process.
+Commentary was added because evaluation showed a vocabulary gap in verse-only retrieval. Chapter routing was added for overview questions. Hybrid verse search was added for exact references and translation-aligned wording. Future changes should follow the same evidence-driven process.
 
 ---
 
-# 12. Summary
+# 11. Summary
 
-Project Tattva v1.2 provides a stable foundation for more advanced retrieval and user-interface features.
+Project Tattva v1.3 provides a stable foundation for more advanced retrieval and user-interface features.
 
-The next technical milestones are reranking and hybrid retrieval, followed by conversation memory and an API/UI layer. Version 2.0 will focus on intelligent query routing and adaptive evidence selection rather than simply searching every collection with fixed settings.
+The next technical milestones are retrieval hardening and cross-encoder reranking, followed by conversation memory and an API/UI layer. Version 2.0 will focus on intelligent query routing and adaptive evidence selection.
 
 ---
 

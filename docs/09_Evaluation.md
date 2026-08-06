@@ -205,7 +205,9 @@ The script `scripts/evaluate_retriever.py` reports:
 - Mean Reciprocal Rank (MRR)
 - Top commentary sections for qualitative inspection
 
-Verse-only Recall@3 remains modest on paraphrase-heavy questions. That finding continues to motivate multi-source retrieval and hybrid search.
+Verse-only Recall@3 remains modest on paraphrase-heavy questions that share little wording with the translations. Hybrid search improves exact references and translation-aligned phrases; commentary continues to bridge modern paraphrases.
+
+The labeled set also includes exact-reference and near-translation paraphrase cases so hybrid changes can be measured directly.
 
 ---
 

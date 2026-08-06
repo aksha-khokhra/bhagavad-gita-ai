@@ -73,5 +73,35 @@
         "query": "What is the relationship between faith and knowledge?",
         "expected_references": ["4.39", "4.40"],
         "expected_topics": ["faith", "knowledge", "doubt"]
+    },
+    {
+        "query": "Explain BG 2.47",
+        "expected_references": ["2.47"],
+        "expected_topics": ["fruit of action", "exact reference"]
+    },
+    {
+        "query": "What does verse 4.16 say?",
+        "expected_references": ["4.16"],
+        "expected_topics": ["action", "inaction", "exact reference"]
+    },
+    {
+        "query": "2.48",
+        "expected_references": ["2.48"],
+        "expected_topics": ["equanimity", "exact reference"]
+    },
+    {
+        "query": "fruit of action",
+        "expected_references": ["2.47"],
+        "expected_topics": ["detachment", "lexical match"]
+    },
+    {
+        "query": "Do not be attached to the fruit of your action",
+        "expected_references": ["2.47", "3.19"],
+        "expected_topics": ["detachment", "paraphrase near translation"]
+    },
+    {
+        "query": "steady wisdom sthita prajna",
+        "expected_references": ["2.55", "2.56", "2.57"],
+        "expected_topics": ["steady wisdom", "lexical paraphrase"]
     }
 ]

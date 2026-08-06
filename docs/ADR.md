@@ -291,8 +291,35 @@ Format chapter summaries as a separate prompt section when routed.
 
 ---
 
+# ADR-015 — Hybrid Verse Retrieval with RRF
+
+**Status:** Accepted
+
+## Context
+
+Dense verse retrieval missed exact reference queries such as `BG 2.47` and under-ranked translation-aligned phrases such as “fruit of action.” Evaluation also showed that modern paraphrases with little lexical overlap still need commentary support.
+
+## Decision
+
+Retrieve verses with three channels and fuse them:
+
+1. Exact metadata lookup for parsed verse references
+2. Dense vector search
+3. In-memory BM25 lexical search over verse translations
+
+Merge candidates with Reciprocal Rank Fusion, preferring exact matches and preserving the strongest lexical hit.
+
+## Consequences
+
+- Exact verse references become deterministic.
+- Shared wording with translations improves verse recall.
+- Modern paraphrases with weak lexical overlap can still miss; commentary remains important.
+- Retriever startup loads an in-memory lexical index from verse documents.
+
+---
+
 # Summary
 
-These records document the major architectural choices made during Project Tattva v1.1 and v1.2.
+These records document the major architectural choices made during Project Tattva v1.1 through v1.3.
 
 The decisions emphasize semantic integrity, source separation, modularity, local execution, and evidence-driven iteration.

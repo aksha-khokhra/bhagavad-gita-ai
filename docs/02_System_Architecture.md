@@ -110,7 +110,7 @@ Current return structure:
 }
 ```
 
-Default retrieval counts are three verses and five commentary sections. Chapter results are included when the query is routed as a chapter overview or chapter reference.
+Default retrieval uses hybrid verse fusion for three verses and five commentary sections. Chapter results are included when the query is routed as a chapter overview or chapter reference.
 
 ---
 
