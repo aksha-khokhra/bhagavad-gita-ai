@@ -1,8 +1,8 @@
 # Project Tattva Documentation
 
 **Document:** 09 — Evaluation  
-**Version:** 1.1  
-**Status:** Initial Evaluation Completed
+**Version:** 1.2  
+**Status:** Labeled Retrieval Evaluation Completed
 
 ---
 
@@ -190,30 +190,41 @@ The initial evaluation produced the following conclusions:
 
 ---
 
-# 11. Current Evaluation Limitations
+# 11. Quantitative Retrieval Evaluation
 
-- Manual inspection rather than labeled metrics
-- Small query set
-- No automated relevance judgments
-- No Recall@K or MRR calculation
+A labeled dataset lives at:
+
+```text
+data/evaluation/retrieval_eval.json
+```
+
+The script `scripts/evaluate_retriever.py` reports:
+
+- Per-query hits and misses against expected verse references
+- Recall@K (default K=3)
+- Mean Reciprocal Rank (MRR)
+- Top commentary sections for qualitative inspection
+
+Verse-only Recall@3 remains modest on paraphrase-heavy questions. That finding continues to motivate multi-source retrieval and hybrid search.
+
+---
+
+# 12. Current Evaluation Limitations
+
+- Small labeled query set
+- No automated relevance judgments beyond expected references
+- No Precision@K reporting yet
 - No comparison across embedding models
 - No latency benchmarks
 - No hallucination scoring
 - No citation correctness checker
+- No response-quality scoring beyond manual end-to-end checks
 
 ---
 
-# 12. Planned Quantitative Metrics
+# 13. Planned Additional Metrics
 
 Future evaluation may include:
-
-## Recall@K
-
-Measures whether an expected document appears within the top K retrieved results.
-
-## Mean Reciprocal Rank
-
-Measures how highly the first relevant result is ranked.
 
 ## Precision@K
 
@@ -233,7 +244,7 @@ Measures indexing, retrieval, and generation time.
 
 ---
 
-# 13. Recommended Evaluation Dataset Structure
+# 14. Evaluation Dataset Structure
 
 ```json
 {
@@ -243,15 +254,15 @@ Measures indexing, retrieval, and generation time.
 }
 ```
 
-A labeled dataset would allow retrieval changes to be compared objectively.
+The labeled dataset allows retrieval changes to be compared objectively before and after pipeline updates.
 
 ---
 
-# 14. Summary
+# 15. Summary
 
-Project Tattva's initial evaluation successfully identified both strengths and weaknesses in the retrieval pipeline.
+Project Tattva's evaluation successfully identified both strengths and weaknesses in the retrieval pipeline.
 
-The most important result was evidence that commentary improves conceptual retrieval by using language closer to modern user questions. This finding directly motivated the move from verse-only retrieval to the current multi-source Retriever.
+The most important early result was evidence that commentary improves conceptual retrieval by using language closer to modern user questions. Quantitative Recall@K and MRR now make those gaps measurable as the retrieval stack evolves.
 
 ---
 

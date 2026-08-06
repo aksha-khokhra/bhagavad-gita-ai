@@ -28,3 +28,4 @@ OLLAMA_MODEL = "phi3:mini"
 
 VERSE_COLLECTION = "verses"
 COMMENTARY_COLLECTION = "commentaries"
+CHAPTER_COLLECTION = "chapters"

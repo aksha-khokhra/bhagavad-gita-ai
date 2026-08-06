@@ -1,14 +1,14 @@
 # Project Tattva Documentation
 
 **Document:** 02 — System Architecture  
-**Version:** 1.1  
+**Version:** 1.2  
 **Status:** Completed
 
 ---
 
 # 1. Purpose
 
-This document describes the implemented architecture of Project Tattva v1.1, including its major components, responsibilities, interactions, and design decisions.
+This document describes the implemented architecture of Project Tattva v1.2, including its major components, responsibilities, interactions, and design decisions.
 
 The system follows a modular Retrieval-Augmented Generation architecture. Retrieval is performed before generation, and each major responsibility is isolated behind a dedicated class.
 
@@ -64,7 +64,7 @@ The architecture was designed to support:
                                       Final Response
 ```
 
-The Chapter Summary Knowledge Base has been designed and its documents have been constructed, but it is not yet connected to the active Retriever.
+The Chapter Summary Knowledge Base is indexed and connected through chapter-level query routing.
 
 ---
 
@@ -93,22 +93,24 @@ The `Retriever` class owns the active retrieval workflow.
 Responsibilities:
 
 - Initialize the Embedder.
-- Connect to the verse collection.
-- Connect to the commentary collection.
+- Connect to the verse, commentary, and chapter collections.
+- Classify chapter-level intent.
 - Embed the user query once.
-- Search both collections using the same query embedding.
-- Return verses and commentaries as separate result groups.
+- Search the relevant collections using the same query embedding.
+- Return verses, commentaries, and chapters as separate result groups.
 
 Current return structure:
 
 ```python
 {
     "verses": [...],
-    "commentaries": [...]
+    "commentaries": [...],
+    "chapters": [...],
+    "route": {"mode": "general", "chapter_number": None}
 }
 ```
 
-The current implementation retrieves three verses and two commentary sections for each user query.
+Default retrieval counts are three verses and five commentary sections. Chapter results are included when the query is routed as a chapter overview or chapter reference.
 
 ---
 
@@ -214,7 +216,7 @@ Extract IDs, Text, and Metadata
 Batch Embedding Generation
           │
           ▼
-VectorStore.add()
+VectorStore.add() / upsert()
           │
           ▼
 Persistent ChromaDB Collections
@@ -224,8 +226,9 @@ The indexing workflow currently creates:
 
 - 701 verse records
 - 136 commentary records
+- 18 chapter summary records
 
-The chapter summary document file contains 18 chapter-level records and remains available for future indexing.
+All three collections are indexed into persistent ChromaDB storage.
 
 ---
 
@@ -241,19 +244,19 @@ The Chatbot sends the question to the Retriever.
 
 ## Step 3
 
-The Retriever generates one query embedding.
+The Retriever classifies chapter-level intent and generates one query embedding.
 
 ## Step 4
 
-The verse and commentary collections are searched independently.
+The verse, commentary, and chapter collections are searched according to the route. Explicit chapter references also filter verse and commentary results to that chapter.
 
 ## Step 5
 
-The Retriever returns separate verse and commentary lists.
+The Retriever returns separate verse, commentary, and chapter lists, plus the routing decision.
 
 ## Step 6
 
-The Prompt Builder formats both source types and inserts the question.
+The Prompt Builder formats each source type and inserts the question.
 
 ## Step 7
 
@@ -276,9 +279,11 @@ Chatbot.chat(user_query)
       ▼
 Retriever.retrieve(user_query)
       │
+      ├── classify_query(user_query)
       ├── Embedder.embed(user_query)
       ├── Verse VectorStore.query(...)
-      └── Commentary VectorStore.query(...)
+      ├── Commentary VectorStore.query(...)
+      └── Chapter VectorStore.query(...) when routed
       │
       ▼
 PromptBuilder.build_prompt(...)
@@ -332,7 +337,7 @@ The model must answer from curated Bhagavad Gita material rather than unrestrict
 
 Reason:
 
-Verses are primary sources, while commentary provides interpretation. Keeping them separate supports independent retrieval counts, formatting, evaluation, and future ranking strategies.
+Verses are primary sources, while commentary provides interpretation and chapter summaries provide thematic grounding. Keeping them separate supports independent retrieval counts, formatting, evaluation, and future ranking strategies.
 
 ---
 
@@ -382,8 +387,8 @@ Rejected because repeatedly loading the same model would be inefficient.
 
 # 11. Current Limitations
 
-- Chapter summaries are not yet part of active retrieval.
-- Retrieval counts are fixed.
+- Chapter routing is rule-based rather than model-based.
+- Retrieval counts are mostly fixed.
 - Results are not reranked after vector search.
 - Commentary sections may be long.
 - Commentary metadata does not yet contain normalized verse ranges.
@@ -394,9 +399,9 @@ Rejected because repeatedly loading the same model would be inefficient.
 
 # 12. Summary
 
-Project Tattva v1.1 uses a modular RAG architecture built around six primary components: Embedder, VectorStore, Retriever, PromptBuilder, LLMClient, and Chatbot.
+Project Tattva v1.2 uses a modular RAG architecture built around six primary components: Embedder, VectorStore, Retriever, PromptBuilder, LLMClient, and Chatbot.
 
-The architecture separates retrieval from generation and preserves the distinction between Bhagavad Gita verses and explanatory commentary. This design supports the current MVP while providing a stable foundation for future routing, reranking, API, and interface improvements.
+The architecture separates retrieval from generation and preserves the distinction between Bhagavad Gita verses, explanatory commentary, and chapter summaries. This design supports the current release while providing a stable foundation for reranking, API, and interface improvements.
 
 ---
 

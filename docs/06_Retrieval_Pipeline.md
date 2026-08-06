@@ -1,14 +1,14 @@
 # Project Tattva Documentation
 
 **Document:** 06 — Retrieval Pipeline  
-**Version:** 1.1  
+**Version:** 1.2  
 **Status:** Completed
 
 ---
 
 # 1. Purpose
 
-This document describes the online retrieval workflow used by Project Tattva to find relevant Bhagavad Gita verses and commentary for a user question.
+This document describes the online retrieval workflow used by Project Tattva to find relevant Bhagavad Gita verses, commentary, and chapter summaries for a user question.
 
 Retrieval is evaluated independently from generation because a language model cannot produce a grounded answer when the required evidence was not retrieved.
 
@@ -18,12 +18,13 @@ Retrieval is evaluated independently from generation because a language model ca
 
 The Retriever was designed to:
 
+- Classify chapter-level questions before search.
 - Embed each user query once.
 - Search multiple vector collections.
 - Preserve source separation.
 - Return application-friendly result objects.
 - Hide collection details from the Chatbot.
-- Support future routing and reranking.
+- Support future reranking and adaptive routing.
 
 ---
 
@@ -33,25 +34,41 @@ The Retriever was designed to:
 User Query
     │
     ▼
-Retriever
+Query Classification
+    │
+    ├── general
+    ├── chapter_reference
+    └── chapter_overview
     │
     ▼
 Query Embedding
     │
-    ├─────────────────────────┐
-    ▼                         ▼
-Verse Collection       Commentary Collection
-    │                         │
-    ▼                         ▼
-Top 3 Verses           Top 2 Commentaries
-    └──────────────┬──────────┘
+    ├──────────────┬────────────────┐
+    ▼              ▼                ▼
+Verse Store   Commentary Store   Chapter Store
+    │              │                │
+    └──────────────┴────────────────┘
                    ▼
           Structured Result Dictionary
 ```
 
 ---
 
-# 4. Query Embedding
+# 4. Query Routing
+
+The Retriever classifies each question before searching.
+
+| Mode | Trigger examples | Behavior |
+|------|------------------|----------|
+| `chapter_reference` | `Summarize Chapter 6`, `What is Chapter 3 about?` | Retrieve that chapter summary and filter verses/commentary to the same chapter |
+| `chapter_overview` | `Which chapter discusses meditation?`, `Give an overview of Karma Yoga` | Retrieve top chapter summaries plus normal verse/commentary search |
+| `general` | `What is devotion?` | Verse and commentary search only |
+
+Routing keeps ordinary verse questions compact while improving chapter-level and thematic overview answers.
+
+---
+
+# 5. Query Embedding
 
 The user question is embedded with the same model used during indexing.
 
@@ -69,9 +86,9 @@ Using the same model ensures the query and stored documents are represented in t
 
 ---
 
-# 5. Collection Search
+# 6. Collection Search
 
-The query embedding is sent independently to both active vector stores.
+Collections are searched according to the route.
 
 ```python
 verse_results = self.verse_store.query(
@@ -81,15 +98,24 @@ verse_results = self.verse_store.query(
 
 commentary_results = self.commentary_store.query(
     query_embedding,
+    n_results=5
+)
+
+chapter_results = self.chapter_store.query(
+    query_embedding,
     n_results=2
 )
 ```
 
-The current fixed allocation keeps the prompt compact while providing both primary and explanatory evidence.
+For explicit chapter references, metadata filters constrain results:
+
+```python
+where={"chapter_number": chapter_number}
+```
 
 ---
 
-# 6. VectorStore Query Output
+# 7. VectorStore Query Output
 
 ChromaDB returns nested result structures because it supports multiple query embeddings in one request.
 
@@ -110,14 +136,19 @@ Lower distance values represent closer vector matches within the current collect
 
 ---
 
-# 7. Retriever Output Contract
+# 8. Retriever Output Contract
 
 The Retriever preserves source separation.
 
 ```python
 {
     "verses": verse_results,
-    "commentaries": commentary_results
+    "commentaries": commentary_results,
+    "chapters": chapter_results,
+    "route": {
+        "mode": "chapter_reference",
+        "chapter_number": 6
+    }
 }
 ```
 
@@ -125,9 +156,9 @@ A dictionary was selected instead of a positional list because named keys are cl
 
 ---
 
-# 8. Why Verse and Commentary Results Remain Separate
+# 9. Why Source Results Remain Separate
 
-Verses and commentary play different roles.
+Verses, commentary, and chapter summaries play different roles.
 
 ## Verses
 
@@ -141,63 +172,46 @@ Verses and commentary play different roles.
 - Used to clarify concepts and vocabulary
 - Formatted with chapter and section title
 
+## Chapters
+
+- Thematic overview source
+- Used for chapter summaries and “which chapter” questions
+- Formatted with title, meaning, and summary text
+
 Returning separate groups prevents the Prompt Builder from having to rediscover the source type by filtering a mixed list.
 
 ---
 
-# 9. Retrieval Evolution
+# 10. Retrieval Evolution
 
 ## Initial Version
 
 The first Retriever searched only the verse collection.
 
-This worked well for direct concepts such as:
-
-- Karma Yoga
-- Meditation
-- Devotion
-- Controlling the mind
-
-However, it struggled when the user's wording differed from the translation.
-
----
-
 ## Commentary-Supported Version
 
-Commentary retrieval was introduced after evaluation of the query:
+Commentary retrieval was introduced after evaluation showed vocabulary mismatch between classical translations and modern paraphrases.
 
-```text
-Why should we perform actions without expecting results?
-```
+## Chapter-Supported Version
 
-Verse 2.47 uses wording related to the “fruit” of action, while relevant commentary uses the modern phrase “without attachment to the results.”
-
-Adding commentary improved the final answer by supplying a closer semantic match and a clearer explanation.
+Chapter summaries were indexed and routed after the documents were already constructed. Chapter routing targets overview and chapter-reference questions without changing general verse/commentary retrieval.
 
 ---
 
-# 10. Retrieval Evaluation Method
+# 11. Retrieval Evaluation Method
 
-A dedicated evaluation script runs representative questions and prints:
+A dedicated evaluation script runs a labeled query set and reports:
 
-- Retrieved verse reference
-- Chapter title
-- Distance
+- Per-query hits and misses
+- Recall@K
+- Mean Reciprocal Rank
+- Top commentary sections for inspection
 
-Questions included:
-
-- What is Karma Yoga?
-- What is meditation?
-- What is devotion?
-- How can I control my mind?
-- What is the difference between action and inaction?
-- Who is a person of steady wisdom?
-
-This made retrieval failures visible before LLM generation was involved.
+Questions include conceptual prompts such as Karma Yoga, meditation, devotion, action and inaction, and selfless duty.
 
 ---
 
-# 11. Observed Strengths
+# 12. Observed Strengths
 
 The verse retriever performed strongly for:
 
@@ -208,39 +222,41 @@ The verse retriever performed strongly for:
 
 The commentary retriever improved conceptual explanation for selfless action and attachment to results.
 
+Chapter routing correctly returns Chapter 6 for meditation overviews and filters to a named chapter when the user asks for a specific chapter summary.
+
 ---
 
-# 12. Observed Limitations
+# 13. Observed Limitations
 
 - Verse 2.47 did not appear in the top 20 for a modern paraphrase of its teaching.
 - Some broad concepts, such as steady wisdom, retrieved less relevant chapters.
-- Fixed retrieval counts do not adapt to question type.
+- Fixed retrieval counts do not fully adapt to question type.
 - Commentary sections can be long.
 - Results from different collections are not reranked together.
 - There is no score threshold for rejecting weak context.
+- Chapter intent detection is rule-based rather than model-based.
 
 ---
 
-# 13. Future Retrieval Improvements
+# 14. Future Retrieval Improvements
 
-- Query routing by question type
-- Chapter summary retrieval
 - Dynamic `top_k`
 - Cross-encoder reranking
 - Hybrid keyword and vector search
-- Metadata filtering
+- Broader metadata filtering
 - Commentary-to-verse linking
 - Reciprocal Rank Fusion
 - Similarity thresholds
 - Query rewriting and expansion
+- Model-based query routing
 
 ---
 
-# 14. Summary
+# 15. Summary
 
-Project Tattva's Retriever embeds the user query once, searches verse and commentary collections independently, and returns structured results grouped by source type.
+Project Tattva's Retriever classifies chapter-level intent, embeds the user query once, searches the relevant collections independently, and returns structured results grouped by source type.
 
-The retrieval design was improved through direct evaluation rather than assumption. Commentary support was introduced because it successfully bridged vocabulary differences between classical translations and modern user questions.
+The retrieval design was improved through direct evaluation rather than assumption. Commentary support bridged vocabulary gaps, and chapter routing improved overview and chapter-reference questions.
 
 ---
 

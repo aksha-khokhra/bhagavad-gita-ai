@@ -1,7 +1,7 @@
 # Project Tattva Documentation
 
 **Document:** 05 — Knowledge Base Construction  
-**Version:** 1.1  
+**Version:** 1.2  
 **Status:** Completed
 
 ---
@@ -234,7 +234,7 @@ The same Embedder instance is reused across collection builds.
 |------------|-----------|--------|
 | `verses` | 701 | Indexed |
 | `commentaries` | 136 | Indexed |
-| `chapters` | 18 | Not yet indexed in active release |
+| `chapters` | 18 | Indexed |
 
 ---
 
@@ -288,6 +288,7 @@ Verified:
 
 - 701 verse documents indexed
 - 136 commentary documents indexed
+- 18 chapter documents indexed
 
 Modules are executed from the project root using:
 
@@ -327,8 +328,7 @@ Collection names and JSON paths were separated into different configuration cons
 
 # 13. Current Limitations
 
-- The chapter collection has not yet been indexed.
-- Rebuilding collections is not yet fully idempotent.
+- Rebuilding collections relies on upsert rather than full collection versioning.
 - No automatic collection versioning exists.
 - The embedding model is fixed through configuration.
 - Indexing progress uses simple terminal output rather than structured logging.

@@ -246,7 +246,7 @@ Add a commentary collection and retrieve explanatory sections alongside verses.
 
 # ADR-013 — Defer Chapter Summary Retrieval
 
-**Status:** Accepted
+**Status:** Superseded by ADR-014
 
 ## Context
 
@@ -264,8 +264,35 @@ Keep chapter summaries prepared but outside the active Retriever until query rou
 
 ---
 
+# ADR-014 — Integrate Chapter Summary Retrieval with Routing
+
+**Status:** Accepted
+
+## Context
+
+Chapter documents were already constructed. Overview and chapter-reference questions were poorly served by verse and commentary retrieval alone.
+
+## Decision
+
+Index the `chapters` collection and add rule-based query routing:
+
+- `chapter_reference` for explicit chapter numbers
+- `chapter_overview` for summary / which-chapter style questions
+- `general` for ordinary verse and commentary questions
+
+Format chapter summaries as a separate prompt section when routed.
+
+## Consequences
+
+- Chapter overviews and thematic chapter discovery improve.
+- Explicit chapter questions can filter verses and commentary to that chapter.
+- Routing remains rule-based and may miss some nuanced intents.
+- Prompt length increases for chapter-routed questions.
+
+---
+
 # Summary
 
-These records document the major architectural choices made during Project Tattva v1.1.
+These records document the major architectural choices made during Project Tattva v1.1 and v1.2.
 
 The decisions emphasize semantic integrity, source separation, modularity, local execution, and evidence-driven iteration.

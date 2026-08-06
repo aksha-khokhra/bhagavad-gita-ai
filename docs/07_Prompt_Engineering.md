@@ -1,14 +1,14 @@
 # Project Tattva Documentation
 
 **Document:** 07 — Prompt Engineering  
-**Version:** 1.1  
+**Version:** 1.2  
 **Status:** Completed
 
 ---
 
 # 1. Purpose
 
-This document describes how Project Tattva converts retrieved verses, commentary, and a user question into a structured prompt for the local language model.
+This document describes how Project Tattva converts retrieved verses, commentary, chapter summaries, and a user question into a structured prompt for the local language model.
 
 Prompt construction is isolated from retrieval and LLM communication so that each layer can be modified and tested independently.
 
@@ -19,7 +19,7 @@ Prompt construction is isolated from retrieval and LLM communication so that eac
 The prompt was designed to:
 
 - Restrict generation to retrieved context.
-- Preserve the distinction between verses and commentary.
+- Preserve the distinction between verses, commentary, and chapter summaries.
 - Provide explicit source labels.
 - Encourage concise synthesis.
 - Reduce hallucination.
@@ -37,6 +37,7 @@ The `PromptBuilder` class:
 - Accepts structured Retriever output.
 - Formats verses.
 - Formats commentaries.
+- Formats chapter summaries when present.
 - Joins each source group with separators.
 - Builds one final prompt string.
 
@@ -120,12 +121,36 @@ The formatter uses `metadata["content"]` rather than the full embedded document 
 
 ---
 
-# 8. Prompt Structure
+# 8. Chapter Summary Formatting
+
+Chapter summaries are included only when the Retriever routes a chapter-level question.
+
+Example:
+
+```text
+Chapter 6: Dhyana Yoga
+Meaning: The Yoga of Meditation
+
+Summary:
+...
+```
+
+The formatter uses chapter metadata directly so the model receives a clean overview block.
+
+---
+
+# 9. Prompt Structure
 
 The final prompt follows this order:
 
 ```text
 System Instructions
+
+========================
+Chapter Summaries
+========================
+
+Formatted chapter summaries (when routed)
 
 ========================
 Relevant Verses
@@ -134,7 +159,7 @@ Relevant Verses
 Formatted verses
 
 ========================
-Relevant Commentaries
+Commentary (Explanation)
 ========================
 
 Formatted commentary
@@ -150,23 +175,24 @@ Response
 ========================
 ```
 
-The model reads instructions first, then primary evidence, then explanatory evidence, and finally the question.
+Chapter summaries appear first for overview questions. Verses remain the primary scriptural evidence when present.
 
 ---
 
-# 9. Why Sources Are Separated
+# 10. Why Sources Are Separated
 
-The prompt keeps verses and commentary under different headings because:
+The prompt keeps verses, commentary, and chapter summaries under different headings because:
 
 - Verses are authoritative source text.
 - Commentary is interpretation.
-- The model should not present commentary as a direct Bhagavad Gita quotation.
+- Chapter summaries are thematic overviews.
+- The model should not present commentary or summaries as direct Bhagavad Gita quotations.
 - Separate sections improve readability.
 - Future prompts can assign different rules to each source type.
 
 ---
 
-# 10. Context Assembly
+# 11. Context Assembly
 
 Each formatted result is added to a list and joined once.
 
@@ -179,7 +205,7 @@ This approach is clearer and more efficient than repeatedly concatenating immuta
 
 ---
 
-# 11. Prompt Iteration
+# 12. Prompt Iteration
 
 The prompt evolved during testing.
 
@@ -198,9 +224,13 @@ The revised prompt:
 - Prevented training-data disclaimers.
 - Encouraged coherent synthesis.
 
+## Chapter Integration
+
+Chapter summary sections were added for routed overview and chapter-reference questions.
+
 ---
 
-# 12. Observed Result
+# 13. Observed Result
 
 With verse-only context, the system could not directly answer why actions should be performed without expecting results.
 
@@ -215,34 +245,31 @@ This demonstrated that prompt quality depends on both formatting and retrieval q
 
 ---
 
-# 13. Current Limitations
+# 14. Current Limitations
 
 - The smaller local model may still produce awkward wording.
 - Citations are generated from the context rather than validated after generation.
 - Commentary can dominate the answer when verse retrieval is weak.
-- The prompt does not yet describe verses as primary and commentary as secondary in explicit detail.
 - There is no token-budget manager.
 - Long commentary sections are not compressed.
 
 ---
 
-# 14. Future Improvements
+# 15. Future Improvements
 
-- Add explicit primary-source and explanation instructions.
 - Add structured citation validation.
 - Add token-aware context truncation.
 - Add source-specific context limits.
-- Add chapter-summary formatting.
 - Add model-specific prompt templates.
 - Add conversation-history support.
 
 ---
 
-# 15. Summary
+# 16. Summary
 
 Project Tattva uses a dedicated PromptBuilder to convert structured retrieval results into a grounded, readable prompt.
 
-The prompt separates scripture from commentary, restricts the model to retrieved context, and provides a controlled fallback for unsupported questions. This design improves transparency and keeps prompt logic independent from retrieval and model communication.
+The prompt separates scripture, commentary, and chapter summaries, restricts the model to retrieved context, and provides a controlled fallback for unsupported questions. This design improves transparency and keeps prompt logic independent from retrieval and model communication.
 
 ---
 

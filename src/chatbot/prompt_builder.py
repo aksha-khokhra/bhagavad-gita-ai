@@ -7,50 +7,65 @@ class PromptBuilder:
             self.system_prompt = prompt_file.read()
 
     def build_prompt(self, user_query, retrieved_documents):
+        verses = retrieved_documents.get("verses", [])
+        commentaries = retrieved_documents.get("commentaries", [])
+        chapters = retrieved_documents.get("chapters", [])
 
-        verses = retrieved_documents["verses"]
-        commentaries = retrieved_documents["commentaries"]
+        sections = [self.system_prompt]
 
-        verse_parts = []
-        commentary_parts = []
-        
-        for result in verses:
-            verse_parts.append(self._format_verse(result))
+        if chapters:
+            chapter_parts = [
+                self._format_chapter(result) for result in chapters
+            ]
+            chapter_context = "\n\n----------------------------------------\n\n".join(
+                chapter_parts
+            )
+            sections.append(
+                "========================\n"
+                "Chapter Summaries\n"
+                "========================\n\n"
+                f"{chapter_context}"
+            )
 
-        for result in commentaries:
-            commentary_parts.append(self._format_commentary(result))
+        verse_parts = [self._format_verse(result) for result in verses]
+        verse_context = "\n\n----------------------------------------\n\n".join(
+            verse_parts
+        ) if verse_parts else "No relevant verses were retrieved."
 
-        verse_context = "\n\n----------------------------------------\n\n".join(verse_parts)
-        commentary_context = "\n\n----------------------------------------\n\n".join(commentary_parts)
+        commentary_parts = [
+            self._format_commentary(result) for result in commentaries
+        ]
+        commentary_context = "\n\n----------------------------------------\n\n".join(
+            commentary_parts
+        ) if commentary_parts else "No relevant commentary was retrieved."
 
-        prompt = f"""{self.system_prompt}
-========================
-Relevant Verses
-========================
+        sections.append(
+            "========================\n"
+            "Relevant Verses\n"
+            "========================\n\n"
+            f"{verse_context}"
+        )
+        sections.append(
+            "========================\n"
+            "Commentary (Explanation)\n"
+            "========================\n\n"
+            f"{commentary_context}"
+        )
+        sections.append(
+            "========================\n"
+            "Question\n"
+            "========================\n\n"
+            f"{user_query}"
+        )
+        sections.append(
+            "========================\n"
+            "Response\n"
+            "========================\n"
+        )
 
-{verse_context}
-
-========================
-Commentary (Explanation)
-========================
-
-{commentary_context}
-
-========================
-Question
-========================
-
-{user_query}
-
-========================
-Response
-========================
-"""    
-
-        return prompt
+        return "\n\n".join(sections)
 
     def _format_verse(self, result):
-
         return f"""Verse {result["metadata"]["reference"]} ({result["metadata"]["chapter_title"]})
 
 Translation:
@@ -64,3 +79,11 @@ Section:
 
 Commentary:
 {result["metadata"]["content"]}"""
+
+    def _format_chapter(self, result):
+        metadata = result["metadata"]
+        return f"""Chapter {metadata["chapter_number"]}: {metadata["chapter_title"]}
+Meaning: {metadata["chapter_title_meaning"]}
+
+Summary:
+{metadata["summary"]}"""

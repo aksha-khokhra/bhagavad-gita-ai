@@ -2,18 +2,17 @@
 
 An end-to-end Retrieval-Augmented Generation (RAG) system for the Bhagavad Gita.
 
-Project Tattva answers English questions by retrieving relevant verses and commentary from ChromaDB, building a grounded prompt, and generating a response with a local Ollama model.
+Project Tattva answers English questions by retrieving relevant verses, commentary, and chapter summaries from ChromaDB, building a grounded prompt, and generating a response with a local Ollama model.
 
 ---
 
 ## What it does
 
 1. Embeds the user question with `all-MiniLM-L6-v2`
-2. Searches separate **verse** and **commentary** collections
-3. Formats retrieved evidence into a grounded prompt
-4. Generates an answer with Ollama (`phi3:mini` by default)
-
-Chapter-summary documents are prepared but not yet connected to the active retriever.
+2. Routes chapter-level questions to the chapter collection when needed
+3. Searches separate **verse**, **commentary**, and **chapter** collections
+4. Formats retrieved evidence into a grounded prompt
+5. Generates an answer with Ollama (`phi3:mini` by default)
 
 ---
 
@@ -44,7 +43,7 @@ bhagavad-gita-ai/
     ├── chatbot/             # Orchestrator, prompt builder, LLM client
     ├── knowledge_base/      # Document builders, embedder, vector store
     ├── prompts/             # System prompt
-    └── retriever/           # Multi-collection retrieval
+    └── retriever/           # Multi-collection retrieval with routing
 ```
 
 ---
@@ -85,7 +84,7 @@ Processed documents are already in `data/processed/`. Index them into ChromaDB:
 python scripts/build_vector_database.py
 ```
 
-This creates `data/chroma_db/` with `verses` and `commentaries` collections.
+This creates `data/chroma_db/` with `verses`, `commentaries`, and `chapters` collections. Re-running the script upserts documents safely.
 
 ---
 
@@ -105,6 +104,10 @@ Example:
 You: What is Karma Yoga?
 
 Project Tattva: ...
+
+You: Summarize Chapter 6
+
+Project Tattva: ...
 ```
 
 ### Evaluate retrieval
@@ -119,13 +122,14 @@ Verse-only Recall@3 is intentionally modest on paraphrase-heavy questions (for e
 
 ---
 
-## Current scope (MVP)
+## Current scope
 
 **Included**
 
-- Verse + commentary document construction
-- Persistent ChromaDB indexing
+- Verse + commentary + chapter document construction
+- Persistent ChromaDB indexing for all three collections
 - Multi-source semantic retrieval
+- Chapter-level query routing
 - Grounded prompt construction
 - Local Ollama generation
 - CLI chat
@@ -133,7 +137,6 @@ Verse-only Recall@3 is intentionally modest on paraphrase-heavy questions (for e
 
 **Not included yet**
 
-- Chapter-summary retrieval / routing
 - FastAPI backend or web UI
 - Conversation memory
 - Hybrid search / reranking
@@ -152,7 +155,7 @@ See `docs/10_Future_Development.md` for the roadmap.
 | [03_Data_Engineering.md](docs/03_Data_Engineering.md) | Parsing and preprocessing |
 | [04_Knowledge_Base_Design.md](docs/04_Knowledge_Base_Design.md) | Verse / commentary / chapter design |
 | [05_Knowledge_Base_Construction.md](docs/05_Knowledge_Base_Construction.md) | Builders, embeddings, indexing |
-| [06_Retrieval_Pipeline.md](docs/06_Retrieval_Pipeline.md) | Multi-source retrieval |
+| [06_Retrieval_Pipeline.md](docs/06_Retrieval_Pipeline.md) | Multi-source retrieval and routing |
 | [07_Prompt_Engineering.md](docs/07_Prompt_Engineering.md) | Grounding rules and formatting |
 | [08_Application_Integration.md](docs/08_Application_Integration.md) | Chatbot + Ollama CLI |
 | [09_Evaluation.md](docs/09_Evaluation.md) | Retrieval findings and limits |
@@ -163,8 +166,9 @@ See `docs/10_Future_Development.md` for the roadmap.
 
 ## Design notes
 
-- Verses and commentary stay in **separate collections** so prompts can treat scripture and explanation differently.
-- Documents keep natural units (one verse / one commentary section) instead of fixed-size chunks.
+- Verses, commentary, and chapter summaries stay in **separate collections** so prompts can treat each source differently.
+- Documents keep natural units (one verse / one commentary section / one chapter summary) instead of fixed-size chunks.
+- Chapter-level questions are routed before retrieval; general questions still use verses and commentary only.
 - Retrieval is evaluated independently of generation so failures can be isolated.
 
 ---

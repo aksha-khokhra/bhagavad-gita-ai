@@ -198,7 +198,7 @@ The final chapter data is converted into:
 data/processed/chapter_documents.json
 ```
 
-These documents are available for future chapter-summary retrieval.
+These documents are indexed into the `chapters` collection and used by chapter-level retrieval.
 
 ---
 

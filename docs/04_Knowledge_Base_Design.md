@@ -1,7 +1,7 @@
 # Project Tattva Documentation
 
 **Document:** 04 — Knowledge Base Design  
-**Version:** 1.1  
+**Version:** 1.2  
 **Status:** Completed
 
 ---
@@ -257,7 +257,7 @@ Chapter metadata includes:
 
 ## Current Status
 
-The 18 chapter documents have been constructed, but a chapter collection is not yet connected to the active Retriever.
+The 18 chapter documents are indexed in the `chapters` ChromaDB collection and connected to the active Retriever through chapter-level query routing.
 
 ---
 
@@ -341,10 +341,9 @@ Each collection can be queried and inspected separately.
 
 # 11. Future Improvements
 
-- Index the chapter summary collection.
 - Add normalized commentary verse ranges.
 - Link commentary sections to related verse records.
-- Add metadata filtering.
+- Add metadata filtering beyond chapter routing.
 - Add reranking across sources.
 - Add hybrid semantic and keyword retrieval.
 - Add multilingual collections.
@@ -355,7 +354,7 @@ Each collection can be queried and inspected separately.
 
 Project Tattva uses separate knowledge bases for verses, commentary, and chapter summaries because each source represents a different level of understanding.
 
-The current release actively combines verse and commentary retrieval. This provides both primary evidence and explanatory context while preserving a clear distinction between the two.
+The current release actively combines verse, commentary, and chapter-summary retrieval. This provides primary evidence, explanatory context, and chapter-level grounding while preserving a clear distinction between the sources.
 
 ---
 

@@ -18,18 +18,22 @@ class VectorStore:
         documents,
         metadatas
     ):
-        self.collection.add(
+        self.collection.upsert(
             ids=ids,
             embeddings=embeddings,
             documents=documents,
             metadatas=metadatas
         )
 
-    def query(self, query_embedding, n_results=5):
-        results = self.collection.query(
-            query_embeddings=[query_embedding],
-            n_results=n_results
-        )
+    def query(self, query_embedding, n_results=5, where=None):
+        query_kwargs = {
+            "query_embeddings": [query_embedding],
+            "n_results": n_results,
+        }
+        if where is not None:
+            query_kwargs["where"] = where
+
+        results = self.collection.query(**query_kwargs)
 
         retrieved_documents = []
 
