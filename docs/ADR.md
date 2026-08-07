@@ -299,6 +299,8 @@ Format chapter summaries as a separate prompt section when routed.
 
 Dense verse retrieval missed exact reference queries such as `BG 2.47` and under-ranked translation-aligned phrases such as “fruit of action.” Evaluation also showed that modern paraphrases with little lexical overlap still need commentary support.
 
+Dense similarity scores and BM25 scores are not on a compatible scale, so a naive weighted sum is unreliable.
+
 ## Decision
 
 Retrieve verses with three channels and fuse them:
@@ -307,7 +309,15 @@ Retrieve verses with three channels and fuse them:
 2. Dense vector search
 3. In-memory BM25 lexical search over verse translations
 
-Merge candidates with Reciprocal Rank Fusion, preferring exact matches and preserving the strongest lexical hit.
+Merge candidates with Reciprocal Rank Fusion, preferring exact matches and preserving the strongest lexical hit. Then apply cross-encoder reranking.
+
+## Alternatives considered
+
+- Dense-only retrieval
+- BM25-only retrieval
+- Weighted raw-score combination across dense and lexical scores
+
+RRF was selected because it combines ranks without requiring calibrated score fusion.
 
 ## Consequences
 
@@ -318,8 +328,58 @@ Merge candidates with Reciprocal Rank Fusion, preferring exact matches and prese
 
 ---
 
+# ADR-016 — Cross-Encoder Reranking
+
+**Status:** Accepted
+
+## Context
+
+Hybrid fusion improved candidate recall, but final ordering still depended on vector distance and BM25 rank. A larger candidate pool needs pairwise relevance scoring before prompt construction.
+
+## Decision
+
+After hybrid verse fusion and commentary vector retrieval, rerank candidates with `cross-encoder/ms-marco-MiniLM-L-6-v2`.
+
+Preserve exact verse references and the strongest BM25 hit so reranking cannot undo those rescues.
+
+## Consequences
+
+- Final context ordering better reflects query-document relevance.
+- Startup and per-query latency increase because a second model is loaded and scored.
+- General-purpose reranker scores are not domain-tuned to Bhagavad Gita translations.
+- Aggregate Recall@K may stay similar when the right verse was already present; gains appear mainly as better ranking and commentary selection.
+
+---
+
+# ADR-017 — Out-of-Scope Rejection via Rerank Score
+
+**Status:** Accepted
+
+## Context
+
+Vector search always returns nearest neighbors. Out-of-domain questions such as “Who built the Taj Mahal?” could still retrieve Gita verses and reach the LLM.
+
+Probe runs showed a clear score gap for `cross-encoder/ms-marco-MiniLM-L-6-v2`:
+
+- In-scope top scores were typically above about `-4`
+- Out-of-scope top scores were typically below about `-8`
+
+## Decision
+
+After retrieval and reranking, reject a query when the best verse/commentary `rerank_score` is below `MIN_RELEVANCE_SCORE = -6.5`.
+
+Exact verse references and successful chapter routes are never rejected. The Chatbot returns a deterministic fallback without calling Ollama.
+
+## Consequences
+
+- Out-of-scope rejection becomes measurable and deterministic.
+- Thresholds are model-specific and may need retuning if the reranker changes.
+- Borderline weak in-scope questions could be rejected if scores fall near the cutoff.
+
+---
+
 # Summary
 
-These records document the major architectural choices made during Project Tattva v1.1 through v1.3.
+These records document the major architectural choices made during Project Tattva v1.
 
 The decisions emphasize semantic integrity, source separation, modularity, local execution, and evidence-driven iteration.

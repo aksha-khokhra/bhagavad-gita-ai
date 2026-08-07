@@ -1,7 +1,7 @@
 # Project Tattva Documentation
 
 **Document:** 06 — Retrieval Pipeline  
-**Version:** 1.3  
+**Version:** 1.4  
 **Status:** Completed
 
 ---
@@ -95,7 +95,7 @@ Using the same model ensures the query and stored documents are represented in t
 
 # 6. Collection Search
 
-Commentary and chapter collections use vector search. Verse retrieval uses a hybrid path.
+Commentary and chapter collections use vector search. Verse retrieval uses a hybrid path, then both verses and commentaries are reranked.
 
 ```python
 verse_results = self._hybrid_verse_results(
@@ -104,9 +104,10 @@ verse_results = self._hybrid_verse_results(
     verse_n_results,
 )
 
-commentary_results = self.commentary_store.query(
+commentary_results = self._retrieve_commentaries(
+    user_query,
     query_embedding,
-    n_results=5
+    commentary_n_results,
 )
 ```
 
@@ -117,6 +118,29 @@ commentary_results = self.commentary_store.query(
 3. Run BM25 lexical search over verse translations.
 4. Fuse candidates with Reciprocal Rank Fusion.
 5. Keep exact matches and the strongest lexical hit near the front of the final list.
+
+## Cross-Encoder Reranking
+
+After hybrid fusion, a cross-encoder (`cross-encoder/ms-marco-MiniLM-L-6-v2`) scores query-candidate pairs and reorders:
+
+- Verse candidates from the hybrid pool
+- Commentary candidates from vector search
+
+Exact verse references remain pinned first. The strongest BM25 hit is also preserved so translation-aligned wording is not dropped by the reranker.
+
+## Out-of-Scope Rejection
+
+After reranking, the Retriever inspects the best verse/commentary `rerank_score`.
+
+If that score is below `MIN_RELEVANCE_SCORE` (`-6.5`), the query is treated as out of scope and the Retriever returns empty evidence with:
+
+```python
+{"mode": "out_of_scope", "chapter_number": None}
+```
+
+The Chatbot then returns a deterministic fallback without calling Ollama.
+
+The threshold was chosen after comparing in-scope and out-of-scope score distributions rather than guessing a Chroma distance cutoff.
 
 For explicit chapter references, metadata filters constrain results:
 
@@ -216,6 +240,10 @@ Exact verse-reference lookup and BM25 lexical search were added after evaluation
 
 Hybrid fusion improved those cases while leaving commentary as the bridge for modern paraphrases that share little wording with the verse translation.
 
+## Cross-Encoder Reranking Version
+
+A cross-encoder was added after hybrid fusion so larger candidate pools could be scored as query-document pairs. Exact references and the top lexical hit remain protected so reranking improves ordering without undoing hybrid rescues.
+
 ---
 
 # 11. Retrieval Evaluation Method
@@ -246,6 +274,8 @@ Chapter routing correctly returns Chapter 6 for meditation overviews and filters
 
 Hybrid verse retrieval returns exact references such as `BG 2.47` and recovers translation-aligned phrases such as “fruit of action.”
 
+Cross-encoder reranking improves ordering within the retrieved candidate pools for both verses and commentary.
+
 ---
 
 # 13. Observed Limitations
@@ -258,27 +288,28 @@ Hybrid verse retrieval returns exact references such as `BG 2.47` and recovers t
 - There is no score threshold for rejecting weak context.
 - Chapter intent detection is rule-based rather than model-based.
 - Modern paraphrases with little lexical overlap (for example, “expecting results”) can still miss Verse 2.47 in verse-only ranking.
-- Results from different source types are not jointly reranked with a cross-encoder.
+- Cross-encoder scores are general-purpose and not domain-tuned to Sanskrit scripture translations.
+- Startup loads both the embedding model and the reranker model.
 
 ---
 
 # 14. Future Retrieval Improvements
 
 - Dynamic `top_k`
-- Cross-encoder reranking
 - Broader metadata filtering
 - Commentary-to-verse linking
 - Similarity thresholds
 - Query rewriting and expansion
 - Model-based query routing
+- Domain-adapted reranker training
 
 ---
 
 # 15. Summary
 
-Project Tattva's Retriever classifies chapter-level intent, embeds the user query once, searches the relevant collections, fuses hybrid verse candidates, and returns structured results grouped by source type.
+Project Tattva's Retriever classifies chapter-level intent, embeds the user query once, searches the relevant collections, fuses hybrid verse candidates, reranks verses and commentaries with a cross-encoder, and returns structured results grouped by source type.
 
-The retrieval design was improved through direct evaluation rather than assumption. Commentary support bridged vocabulary gaps, chapter routing improved overview questions, and hybrid verse search improved exact references and translation-aligned wording.
+The retrieval design was improved through direct evaluation rather than assumption. Commentary support bridged vocabulary gaps, chapter routing improved overview questions, hybrid verse search improved exact references and translation-aligned wording, and cross-encoder reranking improved final candidate ordering.
 
 ---
 

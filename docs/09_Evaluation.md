@@ -1,8 +1,8 @@
 # Project Tattva Documentation
 
 **Document:** 09 — Evaluation  
-**Version:** 1.2  
-**Status:** Labeled Retrieval Evaluation Completed
+**Version:** 1.4  
+**Status:** Typed Retrieval Evaluation Completed
 
 ---
 
@@ -101,7 +101,9 @@ These results showed that the embedding model performs well when user language i
 
 ---
 
-# 6. Weak Retrieval Results
+# 6. Baseline Dense Retrieval Experiment
+
+These findings come from the original dense-only verse retriever and remain historically important.
 
 ## Steady Wisdom
 
@@ -109,7 +111,7 @@ The query did not retrieve the expected Chapter 2 verses describing steady wisdo
 
 ## Action Without Expected Results
 
-The expected Verse 2.47 did not appear in the top 20 verse results.
+In the original dense-only retriever, Verse 2.47 did not appear in the top 20 results for a paraphrased query about performing action without attachment to results.
 
 The query used:
 
@@ -123,7 +125,9 @@ while the translation used:
 fruit of action
 ```
 
-This vocabulary difference reduced semantic similarity under the current embedding model.
+This vocabulary difference reduced semantic similarity under the embedding model.
+
+This failure motivated the introduction of commentary retrieval, BM25 lexical retrieval, Reciprocal Rank Fusion, cross-encoder reranking, and out-of-scope rejection.
 
 ---
 
@@ -190,31 +194,47 @@ The initial evaluation produced the following conclusions:
 
 ---
 
-# 11. Quantitative Retrieval Evaluation
+# 11. Current Hybrid Retrieval Evaluation
 
-A labeled dataset lives at:
+A typed labeled dataset lives at:
 
 ```text
 data/evaluation/retrieval_eval.json
 ```
 
+Query types include:
+
+- `exact_reference`
+- `semantic`
+- `conceptual`
+- `chapter`
+- `out_of_scope`
+
 The script `scripts/evaluate_retriever.py` reports:
 
-- Per-query hits and misses against expected verse references
-- Recall@K (default K=3)
-- Mean Reciprocal Rank (MRR)
-- Top commentary sections for qualitative inspection
+- Verse-reference Recall@3 and MRR@3 for semantic/conceptual queries
+- Exact Reference Accuracy
+- Chapter Routing Accuracy
+- Out-of-Scope Rejection Accuracy
 
-Verse-only Recall@3 remains modest on paraphrase-heavy questions that share little wording with the translations. Hybrid search improves exact references and translation-aligned phrases; commentary continues to bridge modern paraphrases.
+## Latest Measured Results
 
-The labeled set also includes exact-reference and near-translation paraphrase cases so hybrid changes can be measured directly.
+| Metric | Result |
+|--------|-------:|
+| Verse-reference Recall@3 (semantic/conceptual) | 0.307 |
+| Verse-reference MRR@3 (semantic/conceptual) | 0.487 |
+| Exact Reference Accuracy | 10/10 (1.000) |
+| Chapter Routing Accuracy | 6/6 (1.000) |
+| Out-of-Scope Rejection Accuracy | 7/7 (1.000) |
+
+Verse-reference Recall@3 remains challenging for highly paraphrased queries. Hybrid search improves exact references and translation-aligned phrases; commentary continues to bridge modern paraphrases; weak rerank scores reject out-of-domain questions.
 
 ---
 
 # 12. Current Evaluation Limitations
 
-- Small labeled query set
-- No automated relevance judgments beyond expected references
+- Modest labeled query set (~48 queries)
+- No automated relevance judgments beyond expected references/chapters
 - No Precision@K reporting yet
 - No comparison across embedding models
 - No latency benchmarks
@@ -250,9 +270,27 @@ Measures indexing, retrieval, and generation time.
 
 ```json
 {
-    "query": "Why should we perform actions without expecting results?",
-    "expected_references": ["2.47", "3.19", "3.25"],
-    "expected_topics": ["detachment", "selfless action"]
+    "query": "Explain BG 2.47",
+    "type": "exact_reference",
+    "expected_references": ["2.47"]
+}
+```
+
+Chapter and out-of-scope examples:
+
+```json
+{
+    "query": "What is Chapter 6 about?",
+    "type": "chapter",
+    "expected_chapters": [6]
+}
+```
+
+```json
+{
+    "query": "Who built the Taj Mahal?",
+    "type": "out_of_scope",
+    "expected_references": []
 }
 ```
 

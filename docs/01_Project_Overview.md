@@ -1,8 +1,8 @@
 # Project Tattva Documentation
 
 **Document:** 01 — Project Overview  
-**Version:** 1.3  
-**Status:** Hybrid Retrieval Completed
+**Version:** 1.0  
+**Status:** Project Tattva v1 Completed
 
 ---
 
@@ -12,7 +12,7 @@ Project Tattva is an end-to-end Retrieval-Augmented Generation (RAG) system desi
 
 The Bhagavad Gita contains 18 chapters and 701 verses. The verses provide the primary teachings, while commentary explains philosophical meaning in more direct and modern language. Project Tattva combines these sources so that the generated response is based on retrieved evidence rather than on the language model's internal knowledge alone.
 
-The current release accepts an English-language question, classifies chapter-level intents when needed, generates a query embedding, retrieves relevant verses through hybrid search, retrieves commentary and chapter summaries from independent ChromaDB collections, constructs a grounded prompt, and sends that prompt to a locally hosted Ollama model.
+The current release accepts an English-language question, classifies chapter-level intents when needed, generates a query embedding, retrieves relevant verses through hybrid search, reranks verse and commentary candidates with a cross-encoder, retrieves chapter summaries when routed, constructs a grounded prompt, and sends that prompt to a locally hosted Ollama model.
 
 ---
 
@@ -91,9 +91,10 @@ The following features remain outside the current release:
 - FastAPI backend
 - Web interface
 - Conversation memory
-- Cross-encoder reranking
 - Multilingual support
 - Production deployment
+
+Out-of-scope questions are rejected when the best cross-encoder score falls below a measured threshold.
 
 ---
 
@@ -105,6 +106,8 @@ The current system shall be capable of:
 - Classifying chapter-level questions when present.
 - Generating an embedding for the question.
 - Searching the verse vector collection with hybrid fusion.
+- Reranking verse and commentary candidates with a cross-encoder.
+- Rejecting out-of-scope questions when evidence scores are too weak.
 - Searching the commentary vector collection.
 - Searching the chapter summary collection for routed queries.
 - Returning separate verse, commentary, and chapter result groups.
@@ -142,7 +145,7 @@ The system should run locally using Ollama, avoiding mandatory paid API dependen
 
 # 8. High-Level Features
 
-Project Tattva v1.3 includes:
+Project Tattva v1 includes:
 
 - Structured Bhagavad Gita data processing
 - Embedding-ready document construction
@@ -151,11 +154,13 @@ Project Tattva v1.3 includes:
 - Separate verse, commentary, and chapter collections
 - Multi-source semantic retrieval
 - Hybrid verse retrieval with exact-reference lookup, BM25, and RRF
+- Cross-encoder reranking for verses and commentary
 - Chapter-level query routing
+- Out-of-scope rejection based on rerank score
 - Source-aware prompt formatting
 - Local LLM response generation with Ollama
 - CLI-based interaction
-- Labeled retrieval evaluation (Recall@K / MRR)
+- Typed labeled retrieval evaluation (Recall@K / MRR / routing / rejection)
 - Modular object-oriented architecture
 
 ---
@@ -167,6 +172,7 @@ Project Tattva v1.3 includes:
 | Programming Language | Python 3.12 |
 | Embedding Library | Sentence Transformers |
 | Embedding Model | `all-MiniLM-L6-v2` |
+| Reranker | `cross-encoder/ms-marco-MiniLM-L-6-v2` |
 | Vector Database | ChromaDB |
 | Local LLM Runtime | Ollama |
 | Initial LLM | `phi3:mini` |
@@ -278,7 +284,7 @@ bhagavad-gita-ai/
 - [x] Retrieve relevant commentary
 - [x] Return structured multi-source results
 - [x] Add chapter-summary routing
-- [ ] Add cross-encoder reranking
+- [x] Add cross-encoder reranking
 
 ---
 
@@ -319,7 +325,9 @@ bhagavad-gita-ai/
 - [x] Add commentary-supported retrieval
 - [x] Add chapter-summary retrieval and routing
 - [x] Add hybrid verse retrieval
-- [ ] Final code cleanup
+- [x] Add cross-encoder reranking
+- [x] Add out-of-scope rejection
+- [x] Final code cleanup
 - [x] Complete README
 - [x] Push interview-ready release to GitHub
 
@@ -344,7 +352,7 @@ bhagavad-gita-ai/
 
 # 13. Conclusion
 
-Project Tattva v1.3 is a functional, modular RAG application that retrieves Bhagavad Gita verses, commentary, and chapter summaries before generating a local LLM response.
+Project Tattva v1 is a functional, modular RAG application that retrieves Bhagavad Gita verses, commentary, and chapter summaries before generating a local LLM response.
 
 The project demonstrates the complete workflow behind a practical RAG system while preserving clear separation between data engineering, retrieval, prompt construction, and generation. The current release is suitable as an interview and portfolio project, while the architecture provides a strong foundation for future improvements.
 

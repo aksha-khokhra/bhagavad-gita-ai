@@ -21,6 +21,10 @@ CHAPTER_DOCUMENTS = PROCESSED_DIR / "chapter_documents.json"
 RETRIEVAL_EVAL_DATASET = EVAL_DIR / "retrieval_eval.json"
 
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+RERANKER_MODEL = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+# Chosen after comparing in-scope vs out-of-scope top rerank scores.
+# In-scope examples were typically above -4; out-of-scope below -8.
+MIN_RELEVANCE_SCORE = -6.5
 
 SYSTEM_PROMPT_PATH = PROJECT_ROOT / "src" / "prompts" / "system_prompt.md"
 

@@ -96,7 +96,8 @@ Responsibilities:
 - Connect to the verse, commentary, and chapter collections.
 - Classify chapter-level intent.
 - Embed the user query once.
-- Search the relevant collections using the same query embedding.
+- Search the relevant collections using hybrid verse retrieval.
+- Rerank verse and commentary candidates with a cross-encoder.
 - Return verses, commentaries, and chapters as separate result groups.
 
 Current return structure:
@@ -389,7 +390,7 @@ Rejected because repeatedly loading the same model would be inefficient.
 
 - Chapter routing is rule-based rather than model-based.
 - Retrieval counts are mostly fixed.
-- Results are not reranked after vector search.
+- Cross-encoder reranking adds latency and a second model load.
 - Commentary sections may be long.
 - Commentary metadata does not yet contain normalized verse ranges.
 - The interface is CLI-only.
