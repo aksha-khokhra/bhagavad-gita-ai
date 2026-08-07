@@ -255,7 +255,7 @@ class Retriever:
         commentary_results,
         chapter_results,
     ):
-        if route["mode"] in {"chapter_reference", "chapter_overview"} and chapter_results:
+        if route["mode"] == "chapter_reference" and chapter_results:
             return False
 
         best_score = self._best_relevance_score(

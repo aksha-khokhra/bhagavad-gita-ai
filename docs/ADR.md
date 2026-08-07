@@ -230,7 +230,7 @@ Create a dedicated retrieval evaluation script that inspects references and dist
 
 ## Context
 
-The verse-only Retriever failed to retrieve Verse 2.47 for a modern paraphrase about performing actions without expecting results.
+The dense-only baseline Retriever failed to retrieve Verse 2.47 in the top 20 for a modern paraphrase about performing actions without expecting results.
 
 ## Decision
 
@@ -368,7 +368,7 @@ Probe runs showed a clear score gap for `cross-encoder/ms-marco-MiniLM-L-6-v2`:
 
 After retrieval and reranking, reject a query when the best verse/commentary `rerank_score` is below `MIN_RELEVANCE_SCORE = -6.5`.
 
-Exact verse references and successful chapter routes are never rejected. The Chatbot returns a deterministic fallback without calling Ollama.
+Exact verse references and successful `chapter_reference` routes are never rejected. Overview-style chapter queries still pass through the rerank-score check. The Chatbot returns a deterministic fallback without calling Ollama.
 
 ## Consequences
 

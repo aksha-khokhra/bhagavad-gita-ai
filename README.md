@@ -200,7 +200,7 @@ The retrieval pipeline is evaluated with a manually labeled set containing exact
 | Verse-reference Recall@3 (semantic/conceptual) | 0.307 |
 | Verse-reference MRR@3 (semantic/conceptual) | 0.487 |
 | Exact Reference Accuracy | 10/10 (1.000) |
-| Chapter Routing Accuracy | 6/6 (1.000) |
+| Chapter Query Accuracy | 6/6 (1.000) |
 | Out-of-Scope Rejection Accuracy | 7/7 (1.000) |
 
 Verse-reference Recall@3 remains challenging for highly paraphrased queries, which is why the system also uses commentary retrieval, lexical search, reranking, and out-of-scope rejection. Details are in `docs/09_Evaluation.md`.

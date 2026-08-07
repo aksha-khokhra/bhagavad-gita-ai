@@ -109,7 +109,7 @@ These findings come from the original dense-only verse retriever and remain hist
 
 The query did not retrieve the expected Chapter 2 verses describing steady wisdom.
 
-## Action Without Expected Results
+## Dense-Only Baseline: Verse 2.47 Top-20 Failure
 
 In the original dense-only retriever, Verse 2.47 did not appear in the top 20 results for a paraphrased query about performing action without attachment to results.
 
@@ -214,7 +214,7 @@ The script `scripts/evaluate_retriever.py` reports:
 
 - Verse-reference Recall@3 and MRR@3 for semantic/conceptual queries
 - Exact Reference Accuracy
-- Chapter Routing Accuracy
+- Chapter Query Accuracy
 - Out-of-Scope Rejection Accuracy
 
 ## Latest Measured Results
@@ -224,7 +224,7 @@ The script `scripts/evaluate_retriever.py` reports:
 | Verse-reference Recall@3 (semantic/conceptual) | 0.307 |
 | Verse-reference MRR@3 (semantic/conceptual) | 0.487 |
 | Exact Reference Accuracy | 10/10 (1.000) |
-| Chapter Routing Accuracy | 6/6 (1.000) |
+| Chapter Query Accuracy | 6/6 (1.000) |
 | Out-of-Scope Rejection Accuracy | 7/7 (1.000) |
 
 Verse-reference Recall@3 remains challenging for highly paraphrased queries. Hybrid search improves exact references and translation-aligned phrases; commentary continues to bridge modern paraphrases; weak rerank scores reject out-of-domain questions.

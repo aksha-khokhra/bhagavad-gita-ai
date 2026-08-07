@@ -140,6 +140,8 @@ If that score is below `MIN_RELEVANCE_SCORE` (`-6.5`), the query is treated as o
 
 The Chatbot then returns a deterministic fallback without calling Ollama.
 
+Exact verse references and successful `chapter_reference` routes bypass this rejection. `chapter_overview` queries still go through the rerank-score check.
+
 The threshold was chosen after comparing in-scope and out-of-scope score distributions rather than guessing a Chroma distance cutoff.
 
 For explicit chapter references, metadata filters constrain results:
@@ -280,15 +282,15 @@ Cross-encoder reranking improves ordering within the retrieved candidate pools f
 
 # 13. Observed Limitations
 
-- Verse 2.47 did not appear in the top 20 for a modern paraphrase of its teaching.
+- Dense-only baseline: Verse 2.47 did not appear in the top 20 for a modern paraphrase of its teaching.
 - Some broad concepts, such as steady wisdom, retrieved less relevant chapters.
 - Fixed retrieval counts do not fully adapt to question type.
 - Commentary sections can be long.
-- Results from different collections are not reranked together.
-- There is no score threshold for rejecting weak context.
+- Verse and commentary candidates are reranked separately rather than in one joint list.
 - Chapter intent detection is rule-based rather than model-based.
 - Modern paraphrases with little lexical overlap (for example, “expecting results”) can still miss Verse 2.47 in verse-only ranking.
 - Cross-encoder scores are general-purpose and not domain-tuned to Sanskrit scripture translations.
+- The out-of-scope threshold (`MIN_RELEVANCE_SCORE = -6.5`) is model-specific and may need retuning if the reranker changes.
 - Startup loads both the embedding model and the reranker model.
 
 ---
@@ -298,7 +300,7 @@ Cross-encoder reranking improves ordering within the retrieved candidate pools f
 - Dynamic `top_k`
 - Broader metadata filtering
 - Commentary-to-verse linking
-- Similarity thresholds
+- Joint cross-source reranking
 - Query rewriting and expansion
 - Model-based query routing
 - Domain-adapted reranker training

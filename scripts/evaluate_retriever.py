@@ -4,7 +4,7 @@ Evaluate retrieval with a typed labeled query set.
 Reports:
 - Verse Recall@3 / MRR@3 for semantic and conceptual queries
 - Exact Reference Accuracy
-- Chapter Routing Accuracy
+- Chapter Query Accuracy
 - Out-of-Scope Rejection Accuracy
 
 Run from the project root:
@@ -136,7 +136,7 @@ def main():
             ]
             print(f"Expected chapters: {expected_chapters}")
             print(f"Retrieved chapters: {retrieved_chapters}")
-            print(f"Chapter routing hit: {hit}")
+            print(f"Chapter query hit: {hit}")
 
         elif query_type == "out_of_scope":
             out_of_scope_total += 1
@@ -178,7 +178,7 @@ def main():
         )
     if chapter_total:
         print(
-            f"Chapter Routing Accuracy: "
+            f"Chapter Query Accuracy: "
             f"{chapter_hits}/{chapter_total} "
             f"({chapter_hits / chapter_total:.3f})"
         )
