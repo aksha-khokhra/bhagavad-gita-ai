@@ -79,7 +79,7 @@ The system prompt instructs the model to:
 The fallback response is:
 
 ```text
-I don't have enough information in the retrieved Bhagavad Gita context to answer this question.
+I don't have enough information in the Bhagavad Gita knowledge base to answer that.
 ```
 
 ---

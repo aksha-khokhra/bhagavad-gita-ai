@@ -7,7 +7,7 @@ Rules:
 - If the answer cannot be found in the retrieved context,
 reply ONLY with:
 
-"I don't have enough information in the retrieved Bhagavad Gita context to answer this question."
+"I don't have enough information in the Bhagavad Gita knowledge base to answer that."
 
 - Do not use your own knowledge.
 - Do not guess.
